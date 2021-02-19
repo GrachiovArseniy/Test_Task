@@ -2,9 +2,9 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-[RequireComponent(typeof(CharacterController))]
 public class Soldier : MonoBehaviour
 {
+    [SerializeField] private bool _isPlayer = false;
     [SerializeField] private Transform _rotatePoint;
 
     private Rigidbody[] _playerRigidbody;
@@ -13,25 +13,22 @@ public class Soldier : MonoBehaviour
     private Transform _soldier;
 
     private Vector3 velocity;
-    private const float _gravity = -9.81f;
 
     private void Start()
     {
-        _playerRigidbody = transform.GetChild(0).GetComponentsInChildren<Rigidbody>();
-        _characterControll = GetComponentInChildren<CharacterController>();
+        _playerRigidbody = GetComponentsInChildren<Rigidbody>();
+        if (_isPlayer)
+        {
+            _characterControll = GetComponentInChildren<CharacterController>();
+        }
         _animator = GetComponentInChildren<Animator>();
         _soldier = _animator.transform;
         SwitchStateOfRagdoll(false);
     }
 
-    private void FixedUpdate()
-    {
-        Gravity();
-    }
-
     public void Move(float speed)
     {
-        if (_rotatePoint.eulerAngles.y > 315 || _rotatePoint.eulerAngles.y < 45)
+        if (_rotatePoint.eulerAngles.y > 315 + 54 || _rotatePoint.eulerAngles.y < 45 + 54)
         {
             _soldier.rotation = Quaternion.Euler(0, 0, 0);
             #region Movement
@@ -85,7 +82,7 @@ public class Soldier : MonoBehaviour
             }
             #endregion
         }
-        else if (_rotatePoint.eulerAngles.y > 45 && _rotatePoint.eulerAngles.y < 135)
+        else if (_rotatePoint.eulerAngles.y > 45 + 54 && _rotatePoint.eulerAngles.y < 135 + 54)
         {
             _soldier.rotation = Quaternion.Euler(0, 90, 0);
             #region Movement
@@ -139,7 +136,7 @@ public class Soldier : MonoBehaviour
             }
             #endregion
         }
-        else if (_rotatePoint.eulerAngles.y > 135 && _rotatePoint.eulerAngles.y < 225)
+        else if (_rotatePoint.eulerAngles.y > 135 + 54 && _rotatePoint.eulerAngles.y < 225 + 54)
         {
             _soldier.rotation = Quaternion.Euler(0, 180, 0);
             #region Movement
@@ -193,7 +190,7 @@ public class Soldier : MonoBehaviour
             }
             #endregion
         }
-        else if (_rotatePoint.eulerAngles.y > 225 && _rotatePoint.eulerAngles.y < 315)
+        else if (_rotatePoint.eulerAngles.y > 225 + 54 && _rotatePoint.eulerAngles.y < 315 + 54)
         {
             _soldier.rotation = Quaternion.Euler(0, -90, 0);
             #region Movement
@@ -249,14 +246,6 @@ public class Soldier : MonoBehaviour
         }
     }
 
-    public void Shoot(Vector3 target, bool isPlayer)
-    {
-        if (isPlayer)
-        {
-
-        }
-    }
-
     public void SwitchStateOfRagdoll(bool isRagdoll)
     {
         if (isRagdoll)
@@ -277,7 +266,7 @@ public class Soldier : MonoBehaviour
         }
     }
 
-    private void SetBoolInAnimator(string name, bool value)
+    public void SetBoolInAnimator(string name, bool value)
     {
         if (_animator.GetBool(name) != value)
         {
@@ -285,9 +274,9 @@ public class Soldier : MonoBehaviour
         }
     }
 
-    private void Gravity()
+    public void Gravity()
     {
-        velocity.y += _gravity * Time.fixedDeltaTime;
+        velocity += Physics.gravity * Time.fixedDeltaTime;
         _characterControll.Move(velocity * Time.fixedDeltaTime);
     }
 }

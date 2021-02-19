@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Events;
 
+[RequireComponent(typeof(Soldier))]
 public class Player : MonoBehaviour
 {
     UnityEvent PlayerDied = new UnityEvent();
@@ -10,17 +11,20 @@ public class Player : MonoBehaviour
     [SerializeField] private float _speedConst;
     [SerializeField] private float _boost;
     [SerializeField] private int _healthConst;
-    [SerializeField] private Transform _rotatePoint;
+    public Transform _rotatePoint;
+    [SerializeField] private Material _lineMaterial;
+    [SerializeField] private float _lineRadius;
+    [SerializeField] private bool _drawLine;
 
     private Soldier _soldier;
     private Camera _camera;
     private Gun _gun;
     private float _speed;
     private int _health;
-    public bool _isActive = true;
+    private bool _isActive = true;
 
-    RaycastHit hit;
-    Ray ray;
+    private RaycastHit _hit;
+    private Ray _ray;
 
     private void Start()
     {
@@ -35,6 +39,7 @@ public class Player : MonoBehaviour
 
         for (int i = 0; i < ai.Length; i++)
         {
+            Debug.Log(ai[i]);
             PlayerDied.AddListener(ai[i].PlayerDied);
         }
     }
@@ -43,12 +48,11 @@ public class Player : MonoBehaviour
     {
         if (_isActive)
         {
-            _soldier.SwitchStateOfRagdoll(false);
-            ray = _camera.ScreenPointToRay(Input.mousePosition);
+            _ray = _camera.ScreenPointToRay(Input.mousePosition);
 
             if (Input.GetMouseButtonDown(0))
             {
-                _gun.Shoot(hit.point, true);
+                _gun.Shoot(_hit.point, true);
             }
 
             if (Input.GetKey(KeyCode.LeftShift))
@@ -62,17 +66,16 @@ public class Player : MonoBehaviour
 
             _soldier.Move(_speed);
             RotateCharacter();
+            _rotatePoint.eulerAngles += Vector3.up * 54;
         }
-        else
-        {
-            _soldier.SwitchStateOfRagdoll(true);
-        }
+        _soldier.Gravity();
     }
 
     public void Damage(int damage)
     {
         _health -= damage;
         
+        //if died
         if (_health <= 0)
         {
             _isActive = false;
@@ -87,11 +90,12 @@ public class Player : MonoBehaviour
         yield return new WaitForSeconds(5);
         _health = _healthConst;
         _isActive = true;
+        _soldier.SwitchStateOfRagdoll(false);
     }
 
     private void RotateCharacter()
     {
-        Physics.Raycast(ray, out hit);
-        _rotatePoint.LookAt(hit.point);
+        Physics.Raycast(_ray, out _hit);
+        _rotatePoint.LookAt(_hit.point);
     }
 }

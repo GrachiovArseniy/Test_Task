@@ -4,6 +4,7 @@ using UnityEngine;
 using UnityEngine.AI;
 
 [RequireComponent(typeof(NavMeshAgent))]
+[RequireComponent(typeof(Soldier))]
 public class AI : MonoBehaviour
 {
     [SerializeField] private float _speed;
@@ -11,10 +12,9 @@ public class AI : MonoBehaviour
     [SerializeField] private float _cooldownConst;
     [SerializeField] private float _shootingDistance;
     [SerializeField] private int _healthConst;
-    [SerializeField] private Material _activeMaterial;
-    [SerializeField] private Material _inactiveMaterial;
 
     private NavMeshAgent _agent;
+    private Soldier _soldier;
     private Transform _player;
     private Gun _gun;
     private float _cooldown;
@@ -24,12 +24,14 @@ public class AI : MonoBehaviour
     private void Start()
     {
         _agent = GetComponent<NavMeshAgent>();
+        _soldier = GetComponent<Soldier>();
         _player = FindObjectOfType<Player>().transform;
         _gun = GetComponentInChildren<Gun>();
         _cooldown = _cooldownConst;
         _health = _healthConst;
 
         _agent.speed = _speed;
+        _soldier.SwitchStateOfRagdoll(false);
     }
 
     private void FixedUpdate()
@@ -42,6 +44,10 @@ public class AI : MonoBehaviour
                 {
                     _agent.isStopped = false;
                 }
+
+                _soldier.SetBoolInAnimator("W", true);
+                _soldier.SetBoolInAnimator("Shift", true);
+
                 _agent.SetDestination(_player.position);
             }
             else
@@ -50,6 +56,9 @@ public class AI : MonoBehaviour
                 {
                     _agent.isStopped = true;
                 }
+
+                _soldier.SetBoolInAnimator("W", false);
+                _soldier.SetBoolInAnimator("Shift", false);
 
                 if (_cooldown <= 0)
                 {
@@ -72,11 +81,12 @@ public class AI : MonoBehaviour
     {
         _health -= damage;
 
+        //if died
         if (_health <= 0)
         {
             _isActive = false;
             _agent.isStopped = true;
-            _agent.GetComponent<MeshRenderer>().material = _inactiveMaterial;
+            _soldier.SwitchStateOfRagdoll(true);
             StartCoroutine(Rebirth());
         }
     }
@@ -86,7 +96,7 @@ public class AI : MonoBehaviour
         yield return new WaitForSeconds(5);
         _health = _healthConst;
         _isActive = true;
-        _agent.GetComponent<MeshRenderer>().material = _activeMaterial;
+        _soldier.SwitchStateOfRagdoll(false);
     }
 
     public void PlayerDied()

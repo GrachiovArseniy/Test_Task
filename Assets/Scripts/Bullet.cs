@@ -8,21 +8,21 @@ public class Bullet : MonoBehaviour
 
     private void OnTriggerEnter(Collider col)
     {
-        if (col.tag == "Player")
+        if (col.CompareTag("Player"))
         {
             col.gameObject.GetComponentInParent<Player>().Damage(_damage);
             Destroy(this.gameObject);
         }
-        else if (col.tag == "AI")
+        else if (col.CompareTag("AI"))
         {
             col.gameObject.GetComponentInParent<AI>().Damage(_damage);
             Destroy(this.gameObject);
         }
-        else if (col.tag == "Ground")
+        else if (col.CompareTag("Ground"))
         {
             Destroy(this.gameObject);
         }
-        else if (col.tag == "DestroyZone")
+        else if (col.CompareTag("DestroyZone"))
         {
             Destroy(this.gameObject);
         }
